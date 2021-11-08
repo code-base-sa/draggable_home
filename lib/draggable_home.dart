@@ -45,6 +45,9 @@ class DraggableHome extends StatefulWidget {
   /// body: A widget to Body
   final List<Widget> body;
 
+  /// categotiesWidget: A widget between app bar and the body
+  final Widget? categotiesWidget;
+
   /// fullyStretchable: Allows toggling of fully expand draggability of the DraggableHome. Set this to true to allow the user to fully expand the header.
   final bool fullyStretchable;
 
@@ -76,6 +79,10 @@ class DraggableHome extends StatefulWidget {
   /// floatingActionButtonAnimator: Provider of animations to move the FloatingActionButton between FloatingActionButtonLocations.
   final FloatingActionButtonAnimator? floatingActionButtonAnimator;
 
+  final ScrollController? controller;
+
+  final double extraAppBarHight;
+
   /// This will create DraggableHome.
   const DraggableHome({
     Key? key,
@@ -101,6 +108,9 @@ class DraggableHome extends StatefulWidget {
     this.floatingActionButton,
     this.floatingActionButtonLocation,
     this.floatingActionButtonAnimator,
+    this.controller,
+    this.categotiesWidget,
+    this.extraAppBarHight = 0,
   })  : assert(headerExpandedHeight > 0.0 &&
             headerExpandedHeight < stretchMaxHeight),
         assert(
@@ -135,6 +145,8 @@ class _DraggableHomeState extends State<DraggableHome> {
     final double fullyExpandedHeight =
         MediaQuery.of(context).size.height * (widget.stretchMaxHeight);
 
+    final ScrollController? controller = widget.controller;
+
     return Scaffold(
       backgroundColor:
           widget.backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
@@ -158,7 +170,7 @@ class _DraggableHomeState extends State<DraggableHome> {
           return false;
         },
         child: sliver(context, appBarHeight, fullyExpandedHeight,
-            expandedHeight, topPadding),
+            expandedHeight, topPadding, controller),
       ),
       bottomSheet: widget.bottomSheet,
       bottomNavigationBar: widget.bottomNavigationBar,
@@ -174,8 +186,10 @@ class _DraggableHomeState extends State<DraggableHome> {
     double fullyExpandedHeight,
     double expandedHeight,
     double topPadding,
+    ScrollController? controller,
   ) {
     return CustomScrollView(
+      controller: controller,
       physics: BouncingScrollPhysics(),
       slivers: [
         StreamBuilder<List<bool>>(
@@ -209,7 +223,7 @@ class _DraggableHomeState extends State<DraggableHome> {
                   );
                 },
               ),
-              collapsedHeight: appBarHeight,
+              collapsedHeight: appBarHeight + widget.extraAppBarHight,
               expandedHeight: streams[1] ? fullyExpandedHeight : expandedHeight,
               flexibleSpace: Stack(
                 children: [
@@ -264,7 +278,8 @@ class _DraggableHomeState extends State<DraggableHome> {
 
   Container roundedCorner(BuildContext context) {
     return Container(
-      height: widget.curvedBodyRadius,
+      height: widget.curvedBodyRadius * 2.3,
+      margin: EdgeInsets.only(top: widget.curvedBodyRadius),
       decoration: BoxDecoration(
         color:
             widget.backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
@@ -272,6 +287,7 @@ class _DraggableHomeState extends State<DraggableHome> {
           top: Radius.circular(widget.curvedBodyRadius),
         ),
       ),
+      child: widget.categotiesWidget,
     );
   }
 
